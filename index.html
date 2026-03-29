@@ -108,6 +108,11 @@ opacity:0.7;
 <h3>📌 BANNED LIST</h3>
 <pre id="bans"></pre>
 
+<h3>📡 ONLINE / ЗАЯВКИ</h3>
+<input id="searchAdmin" placeholder="Поиск по ник/telegram">
+<button onclick="searchAdmin()">Найти</button>
+<div id="onlineList"></div>
+
 </div>
 
 <script>
@@ -177,6 +182,7 @@ msg("✅ Заявка успешно отправлена, ожидайте ра
 
 document.getElementById("nick").value="";
 document.getElementById("tg").value="";
+render();
 }
 
 function msg(t){
@@ -237,20 +243,44 @@ html+=`
 <div class="card">
 <b>${a.nick}</b><br>
 TG: ${a.tg}<br>
+Device: ${a.device}<br>
 Status: ${statusText}<br>
 
 <button onclick="accept(${i})">✔ ACCEPT</button>
 <button onclick="reject(${i})">❌ REJECT</button>
 <button onclick="banUser('${a.nick}','${a.tg}','${a.device}')">🚫 BAN</button>
-</div>
-`;
+<button onclick="viewResult(${i})">🔍 Проверить</button>
+</div>`;
 
 });
 
 document.getElementById("apps").innerHTML=html;
+document.getElementById("bans").innerText=bans.length?bans.join("\n"):"empty";
+}
 
-document.getElementById("bans").innerText=
-bans.length?bans.join("\n"):"empty";
+// ===== VIEW RESULT =====
+function viewResult(i){
+let a = apps[i];
+alert(`Nick: ${a.nick}\nTelegram: ${a.tg}\nDevice: ${a.device}\nStatus: ${a.status}\nReason: ${a.reason||"-"}`);
+}
+
+// ===== SEARCH ADMIN =====
+function searchAdmin(){
+let s = document.getElementById("searchAdmin").value.trim();
+let html="";
+apps.forEach((a,i)=>{
+if(a.nick.includes(s)||a.tg.includes(s)){
+let statusText = a.status==="pending"?"⏳ На рассмотрении":
+                 a.status==="ACCEPTED"?"✔ Одобрено":
+                 "❌ Отказано";
+html+=`
+<div class="card">
+<b>${a.nick}</b> | TG: ${a.tg} | Device: ${a.device} | Status: ${statusText}
+<button onclick="viewResult(${i})">🔍 Проверить</button>
+</div>`;
+}
+});
+document.getElementById("onlineList").innerHTML = html||"Ничего не найдено";
 }
 
 // ===== ACTIONS =====
