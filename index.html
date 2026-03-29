@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Hasov Russia | Admin System PRO</title>
+
+<style>
+body{
+margin:0;
+font-family:Arial;
+background:linear-gradient(120deg,#0a0a0a,#151515);
+color:white;
+}
+
+.center{
+text-align:center;
+padding:20px;
+}
+
+.card{
+background:#1c1c1c;
+padding:15px;
+margin:10px auto;
+width:90%;
+max-width:520px;
+border-radius:12px;
+box-shadow:0 0 15px rgba(255,255,255,0.05);
+}
+
+input,button{
+padding:10px;
+margin:5px;
+border-radius:8px;
+border:none;
+width:80%;
+}
+
+button{
+cursor:pointer;
+background:white;
+color:black;
+font-weight:bold;
+}
+
+.admin{
+display:none;
+padding:20px;
+}
+
+.small{
+font-size:12px;
+opacity:0.7;
+}
+</style>
+</head>
+
+<body>
+
+<div class="center">
+
+<h1>🔥 Hasov Russia</h1>
+<h3>Набор на пост администратора</h3>
+
+<div class="card">
+
+<input id="nick" placeholder="Ник (латиница)">
+<input id="tg" placeholder="Telegram (латиница)">
+<br>
+<button onclick="send()">Подать заявку</button>
+
+<p id="msg"></p>
+
+</div>
+
+<div class="card">
+
+<h3>📊 Проверка заявки</h3>
+<input id="search" placeholder="Ник или Telegram">
+<br>
+<button onclick="checkResult()">Проверить</button>
+
+<p id="out"></p>
+
+</div>
+
+<div class="card">
+
+<h3>🔐 Admin Login</h3>
+<input id="pass" placeholder="Пароль">
+<button onclick="login()">Войти</button>
+
+</div>
+
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="admin" id="admin">
+
+<h2 style="text-align:center">🛡 ADMIN PANEL</h2>
+
+<div id="apps"></div>
+
+<h3>🚫 BAN SYSTEM</h3>
+<input id="banInput" placeholder="Nick / TG">
+<button onclick="ban()">BAN</button>
+<button onclick="unban()">UNBAN</button>
+
+<h3>📌 BANNED LIST</h3>
+<pre id="bans"></pre>
+
+</div>
+
+<script>
+
+// ===== DATA =====
+let apps = JSON.parse(localStorage.getItem("apps")||"[]");
+let bans = JSON.parse(localStorage.getItem("bans")||"[]");
+
+// ===== DEVICE (anti bypass fake IP) =====
+let device = localStorage.getItem("device_id");
+if(!device){
+device = Math.random().toString(36).substring(2);
+localStorage.setItem("device_id",device);
+}
+
+// ===== VALIDATION =====
+function isValid(text){
+return /^[A-Za-z0-9_@]+$/.test(text);
+}
+
+// ===== SEND =====
+function send(){
+
+let nick=document.getElementById("nick").value.trim();
+let tg=document.getElementById("tg").value.trim();
+
+if(!nick || !tg){
+msg("Заполни все поля");
+return;
+}
+
+if(!isValid(nick)){
+msg("Ник только латиница (A-Z, 0-9, _)");
+return;
+}
+
+if(!isValid(tg)){
+msg("Telegram только латиница");
+return;
+}
+
+// BAN CHECK
+if(
+bans.includes(nick) ||
+bans.includes(tg) ||
+bans.includes(device)
+){
+msg("⛔ Вы забанены");
+return;
+}
+
+// DUPLICATE BLOCK (pending lock)
+if(apps.find(a=>a.nick===nick || a.tg===tg)){
+msg("⛔ Вы не можете подать ещё одну заявку, пока ваша заявка не рассмотрена");
+return;
+}
+
+apps.push({
+nick,tg,device,
+status:"pending",
+reason:""
+});
+
+save();
+
+msg("✅ Заявка успешно отправлена, ожидайте рассмотрения");
+
+document.getElementById("nick").value="";
+document.getElementById("tg").value="";
+}
+
+function msg(t){
+document.getElementById("msg").innerText=t;
+}
+
+// ===== RESULT CHECK =====
+function checkResult(){
+
+let s=document.getElementById("search").value.trim();
+
+let r=apps.find(a=>a.nick===s || a.tg===s);
+
+if(!r){
+document.getElementById("out").innerText="❌ Заявка не найдена";
+return;
+}
+
+let text="";
+
+if(r.status==="pending"){
+text="⏳ На рассмотрении...";
+}
+
+if(r.status==="ACCEPTED"){
+text="✔ Одобрено";
+}
+
+if(r.status==="REJECTED"){
+text="❌ Отказано\nПричина: "+(r.reason||"не указана");
+}
+
+document.getElementById("out").innerText=text;
+}
+
+// ===== ADMIN LOGIN =====
+function login(){
+if(document.getElementById("pass").value==="admin7197"){
+document.getElementById("admin").style.display="block";
+render();
+}
+}
+
+// ===== RENDER ADMIN =====
+function render(){
+
+let html="";
+
+apps.forEach((a,i)=>{
+
+let statusText="";
+
+if(a.status==="pending") statusText="⏳ На рассмотрении";
+if(a.status==="ACCEPTED") statusText="✔ Одобрено";
+if(a.status==="REJECTED") statusText="❌ Отказано";
+
+html+=`
+<div class="card">
+<b>${a.nick}</b><br>
+TG: ${a.tg}<br>
+Status: ${statusText}<br>
+
+<button onclick="accept(${i})">✔ ACCEPT</button>
+<button onclick="reject(${i})">❌ REJECT</button>
+<button onclick="banUser('${a.nick}','${a.tg}','${a.device}')">🚫 BAN</button>
+</div>
+`;
+
+});
+
+document.getElementById("apps").innerHTML=html;
+
+document.getElementById("bans").innerText=
+bans.length?bans.join("\n"):"empty";
+}
+
+// ===== ACTIONS =====
+function accept(i){
+apps[i].status="ACCEPTED";
+save();
+render();
+}
+
+function reject(i){
+let reason=prompt("Введите причину отказа:");
+if(!reason) return;
+
+apps[i].status="REJECTED";
+apps[i].reason=reason;
+
+save();
+render();
+}
+
+// ===== BAN SYSTEM =====
+function banUser(nick,tg,deviceId){
+
+if(!bans.includes(nick)) bans.push(nick);
+if(!bans.includes(tg)) bans.push(tg);
+if(!bans.includes(deviceId)) bans.push(deviceId);
+
+save();
+render();
+}
+
+function ban(){
+let v=document.getElementById("banInput").value.trim();
+if(!bans.includes(v)) bans.push(v);
+save();
+render();
+}
+
+function unban(){
+let v=document.getElementById("banInput").value.trim();
+bans=bans.filter(x=>x!==v);
+save();
+render();
+}
+
+function save(){
+localStorage.setItem("apps",JSON.stringify(apps));
+localStorage.setItem("bans",JSON.stringify(bans));
+}
+
+// init
+render();
+
+</script>
+
+</body>
+</html>
