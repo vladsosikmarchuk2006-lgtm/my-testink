@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RP EXAM | Hasov</title>
+<title>Hasov Russia | Hasov</title>
 <style>
 body{margin:0;font-family:Arial;background:#0f0f0f;color:white;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:10px;box-sizing:border-box;}
 .box{width:100%;max-width:520px;background:#1c1c1c;padding:18px;margin:10px 0;border-radius:15px;text-align:center;box-shadow:0 0 20px rgba(0,0,0,0.5);}
@@ -133,7 +133,7 @@ let code=randomCode();
 document.getElementById("r").innerText=score+"/"+test.length+" "+msg+"\nКод: "+code;
 
 let custom=document.getElementById("customMsg").value.trim();
-let text=`Ник: ${player}\nРезультат: ${score}/${test.length}\nКод: ${code}`;
+let text=`Ник: ${player}\nРезультаты епта: ${score}/${test.length}\nКод: ${code}`;
 if(custom) text+=`\nДополнительно: ${custom}`;
 if(custom) text+= `\nРезультаты новые епта ${custom}`;
 
