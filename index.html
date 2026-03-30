@@ -128,13 +128,14 @@ function finish(){
 clearInterval(interval);
 document.getElementById("q").innerText="RESULT";
 document.getElementById("a").innerHTML="";
-let msg="";if(score<10)msg="❌ не прошёл";else msg="✔ прошёл";
+let msg="";if(score<10)msg="❌ не прошёл ты брат";else msg="✔ прошёл поздравляю";
 let code=randomCode();
 document.getElementById("r").innerText=score+"/"+test.length+" "+msg+"\nКод: "+code;
 
 let custom=document.getElementById("customMsg").value.trim();
 let text=`Ник: ${player}\nРезультат: ${score}/${test.length}\nКод: ${code}`;
 if(custom) text+=`\nДополнительно: ${custom}`;
+if(custom) text+= `\nРезультаты новые епта ${custom}`;
 
 // Отправка в Telegram
 fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`,{
