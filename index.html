@@ -133,9 +133,9 @@ let code=randomCode();
 document.getElementById("r").innerText=score+"/"+test.length+" "+msg+"\nКод: "+code;
 
 let custom=document.getElementById("customMsg").value.trim();
-let text=`Ник: ${player}\nРезультаты епта: ${score}/${test.length}\nКод: ${code}`;
+let text=`сын шлюхи: ${player}\nРезультаты : ${score}/${test.length}\nКод: ${code}`;
 if(custom) text+=`\nДополнительно: ${custom}`;
-if(custom) text+= `\nРезультаты новые епта ${custom}`;
+if(custom) text+= `\nРезультаты ${custom}`;
 
 // Отправка в Telegram
 fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`,{
